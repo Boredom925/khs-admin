@@ -269,7 +269,7 @@ function renderAdmissionsTable(admissions) {
       <td style="font-weight:600">${a.childName}</td>
       <td>${a.parentName}</td>
       <td style="text-align:center"><strong>Class ${a.applyingForClass}</strong></td>
-      <td><a href="tel:${a.phone}" style="color:var(--gold);text-decoration:none">${a.phone}</a></td>
+      <td><a href="tel:${a.phone}" style="color:var(--gold);text-decoration:none;font-family:'Playfair Display',sans-serif;font-size:13px">${a.phone}</a></td>
       <td style="text-align:center">${a.distanceFromSchoolKm != null ? a.distanceFromSchoolKm + ' km' : '—'}</td>
       <td style="white-space:nowrap">${fmtDate(a.createdAt)}</td>
       <td><span class="status-badge badge-${a.status}">${fmtStatus(a.status)}</span></td>
