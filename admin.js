@@ -4,9 +4,10 @@
 
 const API_BASE = 'https://khs-backend.vercel.app/api';
 
-// ─── ADMIN CREDENTIALS (change these!) ───────
+// ─── ADMIN CREDENTIALS  ───────
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = 'khs@admin2025';
+const SESSION_DURATION = 30 * 60 * 1000; 
 
 // ─── STATE ────────────────────────────────────
 let currentSection = 'overview';
@@ -29,17 +30,55 @@ function handleLogin() {
   const err  = document.getElementById('loginError');
 
   if (user === ADMIN_USER && pass === ADMIN_PASS) {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('dashboard').classList.remove('hidden');
-    loadAll();
-    startClock();
+    // Save session to localStorage with expiry time
+    const expiry = Date.now() + SESSION_DURATION;
+    localStorage.setItem('khs_admin_session', JSON.stringify({ expiry }));
+    showDashboard();
   } else {
     err.classList.remove('hidden');
     setTimeout(() => err.classList.add('hidden'), 3000);
   }
 }
 
+function showDashboard() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+  loadAll();
+  startClock();
+  startSessionTimer();
+}
+
+// ─── CHECK SESSION ON PAGE LOAD ───────────────
+(function checkSession() {
+  const raw = localStorage.getItem('khs_admin_session');
+  if (raw) {
+    const { expiry } = JSON.parse(raw);
+    if (Date.now() < expiry) {
+      showDashboard(); // Still valid — skip login
+      return;
+    }
+  }
+  // No session or expired — show login
+  localStorage.removeItem('khs_admin_session');
+})();
+
+// ─── SESSION TIMER (auto logout when expired) ─
+function startSessionTimer() {
+  setInterval(() => {
+    const raw = localStorage.getItem('khs_admin_session');
+    if (!raw) return;
+    const { expiry } = JSON.parse(raw);
+    if (Date.now() >= expiry) {
+      localStorage.removeItem('khs_admin_session');
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      alert('⏰ Session expired. Please login again.');
+    }
+  }, 60 * 1000); // Check every minute
+}
+
 document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('khs_admin_session');
   document.getElementById('dashboard').classList.add('hidden');
   document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('loginUser').value = '';
